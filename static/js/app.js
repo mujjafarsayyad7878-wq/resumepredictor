@@ -1,6 +1,7 @@
 /**
  * Smart Resume Matcher & Career Guide - Frontend Controller
- * Supports multi-page navigation, English and Hindi bilingual UI,
+ * Supports multi-page navigation (Home, Results, Roles Guide),
+ * custom job role typing & preset dropdown, English and Hindi bilingual UI,
  * Chart.js score gauge & radar, drag & drop, and PDF export.
  */
 
@@ -10,6 +11,7 @@ let currentAnalysisResult = null;
 let availableRoles = [];
 let currentLanguage = 'en'; // 'en' or 'hi'
 let currentPage = 'home';
+let isCustomRoleMode = false;
 
 // Translation Dictionary (English and Hindi - Simple, everyday language)
 const I18N = {
@@ -17,8 +19,7 @@ const I18N = {
         nav_home: "Home & Upload",
         nav_results: "Analysis Report",
         nav_roles: "Job Roles Guide",
-        nav_render: "Deploy on Render",
-        status_online: "Engine Ready",
+        status_online: "Ready",
         hero_badge: "100% Free Resume Analysis & Career Guidance",
         hero_title_1: "Check How Well Your Resume Matches",
         hero_title_2: "Any Tech Job",
@@ -26,16 +27,19 @@ const I18N = {
         step1_title: "1. Upload Resume",
         step1_desc: "PDF, Text or paste text. English & Hindi supported.",
         step2_title: "2. Choose Job Role",
-        step2_desc: "Select Full Stack, AI/ML, Cloud, Data Science or custom.",
+        step2_desc: "Pick from popular tech roles or type your own custom role!",
         step3_title: "3. Get Instant Results",
         step3_desc: "See match score, missing skills, salary and free courses.",
-        quick_test_label: "⚡ Try 1-Click Sample Resumes:",
         input_label_resume: "Upload or Paste Resume",
         dropzone_click: "Click to upload PDF / Text",
         dropzone_or: "or drag & drop here",
         dropzone_support: "Supports PDF, TXT, MD (Max 15MB)",
         resume_placeholder: "Or paste your resume text here (experience, skills, education, projects, English or Hindi)...",
         target_role_label: "Select Target Job Role",
+        btn_type_custom_role: "Type custom role",
+        btn_pick_preset_role: "Pick from list",
+        custom_role_hint: "You can type any tech title you want.",
+        custom_role_placeholder: "Type job title (e.g. Flutter Developer, Mobile Engineer, QA Tester)...",
         role_exp_needed: "Experience Needed:",
         role_salary_label: "Typical Market Salary:",
         custom_jd_toggle: "Compare against a specific Job Description",
@@ -83,43 +87,34 @@ const I18N = {
         roles_guide_badge: "Industry Roles Guide",
         roles_guide_title: "Tech Job Roles & Required Skills",
         roles_guide_desc: "Explore standard tech jobs to understand what skills companies look for, expected salary bands, and average experience needed.",
-        render_guide_badge: "Render Free Tier Hosting",
-        render_guide_title: "How to Host This Website on Render (100% Free)",
-        render_guide_desc: "Follow these 4 simple steps to make this website live on the internet with a free public URL on Render.com — zero hosting cost, no credit card needed!",
-        render_step1_title: "Upload Code to GitHub",
-        render_step1_desc: "Create a free repository on GitHub.com and push this project's code. render.yaml and requirements.txt are already pre-configured for you.",
-        render_step2_title: "Sign Up on Render (Free)",
-        render_step2_desc: "Go to render.com and sign up for a free account. You can log in directly with your GitHub account in 1 click.",
-        render_step3_title: "Create New Web Service",
-        render_step3_desc: "Click 'New +' -> 'Web Service' on your Render dashboard and connect your GitHub repository. Choose the Free instance type.",
-        render_step4_title: "Click 'Deploy Web Service'",
-        render_step4_desc: "Render will automatically build and launch your site. In about 2 minutes, you will get a free live URL (e.g. https://your-site.onrender.com) accessible to anyone in the world!",
-        footer_title: "Smart Resume Matcher & Career Guide (Free Edition)"
+        footer_title: "Smart Resume Matcher & Career Guide (Production Edition)"
     },
 
     hi: {
         nav_home: "होम और अपलोड",
         nav_results: "रिजल्ट रिपोर्ट",
         nav_roles: "नौकरी गाइड",
-        nav_render: "मुफ्त में लाइव करें",
-        status_online: "इंजन तैयार है",
+        status_online: "तैयार है",
         hero_badge: "100% मुफ्त रिज्यूमे विश्लेषण व करियर सलाह",
         hero_title_1: "जानें कि आपका रिज्यूमे किसी भी नौकरी के लिए",
         hero_title_2: "कितना तैयार है",
         hero_desc: "अपना रिज्यूमे अपलोड करें और तुरंत जानें: आपका मैच स्कोर, कौन से कौशल आपको सीखने हैं, आपका अनुमानित वेतन और सीखने के लिए मुफ्त कोर्सेज — बिल्कुल सरल और आसान भाषा में!",
         step1_title: "1. रिज्यूमे अपलोड करें",
         step1_desc: "पीडीएफ या टेक्स्ट फाइल अपलोड करें या टेक्स्ट पेस्ट करें। हिंदी व अंग्रेजी दोनों समर्थित।",
-        step2_title: "2. अपनी पसंदीदा नौकरी चुनें",
-        step2_desc: "फुल स्टैक, एआई/मशीन लर्निंग, क्लाउड या डेटा साइंस चुनें।",
+        step2_title: "2. नौकरी का पद चुनें",
+        step2_desc: "लिस्ट से चुनें या अपना मनपसंद पद खुद टाइप करें!",
         step3_title: "3. तुरंत रिजल्ट पाएं",
         step3_desc: "मैच स्कोर, छूटे हुए कौशल, वेतन और सीखने के मुफ्त साधन देखें।",
-        quick_test_label: "⚡ 1-क्लिक में टेस्ट करने के लिए सैंपल रिज्यूमे चुनें:",
         input_label_resume: "रिज्यूमे अपलोड करें या पेस्ट करें",
         dropzone_click: "पीडीएफ या टेक्स्ट फाइल चुनने के लिए क्लिक करें",
         dropzone_or: "या फाइल को यहां ड्रैग व ड्रॉप करें",
         dropzone_support: "पीडीएफ (PDF), टेक्स्ट (TXT), मार्कडाउन (MD) समर्थित (अधिकतम 15MB)",
         resume_placeholder: "या अपना रिज्यूमे यहां पेस्ट करें (अनुभव, कौशल, शिक्षा, प्रोजेक्ट्स - हिंदी या अंग्रेजी में)...",
         target_role_label: "लक्षित नौकरी का पद चुनें",
+        btn_type_custom_role: "खुद से लिखें",
+        btn_pick_preset_role: "लिस्ट से चुनें",
+        custom_role_hint: "आप कोई भी पद खुद टाइप कर सकते हैं।",
+        custom_role_placeholder: "पद का नाम लिखें (जैसे Flutter Developer, Android Engineer, QA Tester)...",
         role_exp_needed: "आवश्यक अनुभव:",
         role_salary_label: "बाजार में सामान्य वेतन:",
         custom_jd_toggle: "किसी विशेष नौकरी के विवरण (JD) से तुलना करें",
@@ -167,18 +162,7 @@ const I18N = {
         roles_guide_badge: "नौकरी गाइड",
         roles_guide_title: "प्रमुख आईटी नौकरियां और आवश्यक कौशल",
         roles_guide_desc: "जानें कि अलग-अलग तकनीकी नौकरियों में कंपनियां क्या कौशल मांगती हैं और कितना वेतन मिलता है।",
-        render_guide_badge: "रेंडर मुफ्त होस्टिंग",
-        render_guide_title: "इस वेबसाइट को रेंडर पर मुफ्त में लाइव कैसे करें",
-        render_guide_desc: "इन 4 आसान स्टेप्स का पालन करके इस वेबसाइट को Render.com पर बिल्कुल मुफ्त में लाइव इंटरनेट पर चलाएं — ₹0 खर्च, कोई क्रेडिट कार्ड नहीं चाहिए!",
-        render_step1_title: "कोड को GitHub पर अपलोड करें",
-        render_step1_desc: "GitHub.com पर एक मुफ्त रिपोजिटरी बनाएं और इस प्रोजेक्ट का कोड अपलोड करें। render.yaml और requirements.txt पहले से तैयार हैं।",
-        render_step2_title: "Render पर मुफ्त साइन अप करें",
-        render_step2_desc: "render.com पर जाएं और 'Get Started for Free' पर क्लिक करें। आप अपने GitHub अकाउंट से 1-क्लिक में लॉगिन कर सकते हैं।",
-        render_step3_title: "New Web Service बनाएं",
-        render_step3_desc: "Render डैशबोर्ड पर 'New +' -> 'Web Service' पर क्लिक करें और अपनी GitHub रिपोजिटरी चुनें। Free प्लान का चयन करें।",
-        render_step4_title: "'Deploy Web Service' पर क्लिक करें",
-        render_step4_desc: "Render खुद-ब-खुद वेबसाइट को इंस्टॉल और स्टार्ट कर देगा। लगभग 2 मिनट में आपको एक मुफ्त लिंक (जैसे https://your-site.onrender.com) मिल जाएगा जो पूरी दुनिया में खुलेगा!",
-        footer_title: "स्मार्ट रिज्यूमे मैच व करियर गाइड (मुफ्त संस्करण)"
+        footer_title: "स्मार्ट रिज्यूमे मैच व करियर गाइड (प्रोडक्शन संस्करण)"
     }
 };
 
@@ -194,12 +178,12 @@ async function initApp() {
 }
 
 /**
- * Switch Navigation Tab Pages
+ * Switch Navigation Tab Pages (3 Core Pages)
  */
 function switchPage(pageId) {
     currentPage = pageId;
 
-    const pages = ['home', 'results', 'roles', 'render'];
+    const pages = ['home', 'results', 'roles'];
     pages.forEach(p => {
         const el = document.getElementById(`page-${p}`);
         if (el) {
@@ -213,9 +197,9 @@ function switchPage(pageId) {
         const navBtn = document.getElementById(`nav-btn-${p}`);
         if (navBtn) {
             if (p === pageId) {
-                navBtn.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition-all flex items-center space-x-1.5 shadow-sm';
+                navBtn.className = 'px-3.5 py-1.5 rounded-lg bg-indigo-600 text-white transition-all flex items-center space-x-1.5 shadow-sm';
             } else {
-                navBtn.className = 'px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center space-x-1.5 relative';
+                navBtn.className = 'px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center space-x-1.5 relative';
             }
         }
     });
@@ -270,9 +254,81 @@ function applyTranslations(lang) {
         jdTextarea.placeholder = dict.custom_jd_placeholder;
     }
 
+    const customRoleInput = document.getElementById('custom-role-input');
+    if (customRoleInput && dict.custom_role_placeholder) {
+        customRoleInput.placeholder = dict.custom_role_placeholder;
+    }
+
     const langLabel = document.getElementById('current-lang-label');
     if (langLabel) {
         langLabel.textContent = (lang === 'en') ? 'English' : 'हिंदी';
+    }
+
+    // Update toggle role mode text
+    const toggleBtnText = document.getElementById('toggle-role-mode-text');
+    if (toggleBtnText) {
+        toggleBtnText.textContent = isCustomRoleMode ? dict.btn_pick_preset_role : dict.btn_type_custom_role;
+    }
+}
+
+/**
+ * Toggle Between Dropdown Role Selection and Custom Input Typing
+ */
+function toggleCustomRoleMode(forceCustom) {
+    if (typeof forceCustom === 'boolean') {
+        isCustomRoleMode = forceCustom;
+    } else {
+        isCustomRoleMode = !isCustomRoleMode;
+    }
+
+    const selectContainer = document.getElementById('role-select-container');
+    const customContainer = document.getElementById('custom-role-container');
+    const toggleBtnText = document.getElementById('toggle-role-mode-text');
+    const customInput = document.getElementById('custom-role-input');
+    const isHi = (currentLanguage === 'hi');
+
+    if (isCustomRoleMode) {
+        if (selectContainer) selectContainer.classList.add('hidden');
+        if (customContainer) customContainer.classList.remove('hidden');
+        if (toggleBtnText) toggleBtnText.textContent = isHi ? 'लिस्ट से चुनें' : 'Pick from list';
+        if (customInput) customInput.focus();
+        handleCustomRoleInput();
+    } else {
+        if (selectContainer) selectContainer.classList.remove('hidden');
+        if (customContainer) customContainer.classList.add('hidden');
+        if (toggleBtnText) toggleBtnText.textContent = isHi ? 'खुद से लिखें' : 'Type custom role';
+        
+        const select = document.getElementById('target-role');
+        if (select && select.value === '__custom__') {
+            select.selectedIndex = 0;
+        }
+        handleRoleChange();
+    }
+}
+
+/**
+ * Handle Live Input in Custom Target Role Input Field
+ */
+function handleCustomRoleInput() {
+    const customInput = document.getElementById('custom-role-input');
+    const roleTitle = customInput ? customInput.value.trim() : '';
+    const expEl = document.getElementById('preview-exp');
+    const salEl = document.getElementById('preview-salary');
+    const sumEl = document.getElementById('preview-summary');
+    const isHi = (currentLanguage === 'hi');
+
+    if (roleTitle) {
+        if (expEl) expEl.textContent = isHi ? '2-5+ वर्ष (अनुमानित)' : '2-5+ Years (Estimated)';
+        if (salEl) salEl.textContent = '$100k - $165k (~₹12 - ₹28 LPA)';
+        if (sumEl) sumEl.textContent = isHi 
+            ? `लक्षित पद: "${roleTitle}"। आपके रिज्यूमे का मूल्यांकन इस तकनीकी पद की आवश्यक क्षमताओं के आधार पर किया जाएगा।`
+            : `Target Role: "${roleTitle}". Evaluation will benchmark your skills against industry requirements for this title.`;
+    } else {
+        if (expEl) expEl.textContent = isHi ? 'पद दर्ज करें' : 'Varies by role';
+        if (salEl) salEl.textContent = '$95k - $160k (~₹10 - ₹25 LPA)';
+        if (sumEl) sumEl.textContent = isHi 
+            ? 'ऊपर अपने मनपसंद पद का नाम टाइप करें (जैसे Flutter Developer, Android Engineer, QA Tester)...'
+            : 'Type your custom job title above (e.g. Flutter Developer, Mobile Engineer, QA Tester)...';
     }
 }
 
@@ -305,7 +361,14 @@ function populateRoleDropdown(roles) {
         opt.textContent = (currentLanguage === 'hi' && role.title_hi) ? `${role.title_hi} (${role.title})` : role.title;
         select.appendChild(opt);
     });
-    if (currentVal) select.value = currentVal;
+
+    // Add custom typing option
+    const customOpt = document.createElement('option');
+    customOpt.value = '__custom__';
+    customOpt.textContent = (currentLanguage === 'hi') ? '✏️ Custom Role (खुद से लिखें)...' : '✏️ Custom Role (Type your own title)...';
+    select.appendChild(customOpt);
+
+    if (currentVal && currentVal !== '__custom__') select.value = currentVal;
 }
 
 /**
@@ -314,8 +377,13 @@ function populateRoleDropdown(roles) {
 function handleRoleChange() {
     const select = document.getElementById('target-role');
     const selectedTitle = select ? select.value : '';
-    const role = availableRoles.find(r => r.title === selectedTitle);
 
+    if (selectedTitle === '__custom__') {
+        toggleCustomRoleMode(true);
+        return;
+    }
+
+    const role = availableRoles.find(r => r.title === selectedTitle);
     const expEl = document.getElementById('preview-exp');
     const salEl = document.getElementById('preview-salary');
     const sumEl = document.getElementById('preview-summary');
@@ -365,7 +433,6 @@ function renderRolesCatalog() {
         const card = document.createElement('div');
         card.className = 'glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-4 glow-border';
 
-        // Skills badges
         const primaryChips = (role.primary_skills || []).slice(0, 6).map(s => 
             `<span class="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] font-medium">${s}</span>`
         ).join('');
@@ -394,7 +461,7 @@ function renderRolesCatalog() {
                     <span class="text-[10px] text-slate-400 block">${isHi ? 'अनुमानित पैकेज:' : 'Market Salary:'}</span>
                     <span class="font-bold text-emerald-400">$${minK}k - $${maxK}k <span class="text-cyan-300">(₹${inrMin}-₹${inrMax} LPA)</span></span>
                 </div>
-                <button type="button" onclick="selectRoleAndGoHome('${role.title}')" class="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all">
+                <button type="button" onclick="selectRoleAndGoHome('${role.title}')" class="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all cursor-pointer">
                     ${isHi ? 'यह पद चुनें' : 'Test This Role'} &rarr;
                 </button>
             </div>
@@ -404,48 +471,15 @@ function renderRolesCatalog() {
 }
 
 function selectRoleAndGoHome(roleTitle) {
+    if (isCustomRoleMode) {
+        toggleCustomRoleMode(false);
+    }
     const select = document.getElementById('target-role');
     if (select) {
         select.value = roleTitle;
         handleRoleChange();
     }
     switchPage('home');
-}
-
-/**
- * Quick-test Sample Profile loader
- */
-function loadSampleProfile(key) {
-    if (!window.SAMPLE_PROFILES || !window.SAMPLE_PROFILES[key]) return;
-    const profile = window.SAMPLE_PROFILES[key];
-
-    const textarea = document.getElementById('resume-text');
-    const roleSelect = document.getElementById('target-role');
-    const customJdToggle = document.getElementById('toggle-custom-jd');
-
-    if (textarea) textarea.value = profile.resumeText;
-    if (roleSelect) {
-        roleSelect.value = profile.role;
-        handleRoleChange();
-    }
-    if (customJdToggle && customJdToggle.checked) {
-        customJdToggle.checked = false;
-        toggleCustomJdView();
-    }
-
-    // If loading the Hindi sample profile, switch language to Hindi automatically
-    if (key === 'hindi' && currentLanguage !== 'hi') {
-        currentLanguage = 'hi';
-        applyTranslations('hi');
-    }
-
-    updateCounters();
-
-    // Scroll smoothly to input
-    const inputSection = document.getElementById('input-section');
-    if (inputSection) {
-        inputSection.scrollIntoView({ behavior: 'smooth' });
-    }
 }
 
 /**
@@ -497,7 +531,6 @@ function handleFileSelect(e) {
 async function handleUploadedFile(file) {
     if (!file) return;
 
-    // Show file badge
     const badge = document.getElementById('uploaded-file-badge');
     const nameEl = document.getElementById('uploaded-file-name');
     if (badge && nameEl) {
@@ -594,11 +627,16 @@ function resetForm() {
     const textarea = document.getElementById('resume-text');
     const customJd = document.getElementById('custom-jd-text');
     const customToggle = document.getElementById('toggle-custom-jd');
+    const customRoleInput = document.getElementById('custom-role-input');
     if (textarea) textarea.value = '';
     if (customJd) customJd.value = '';
+    if (customRoleInput) customRoleInput.value = '';
     if (customToggle) {
         customToggle.checked = false;
         toggleCustomJdView();
+    }
+    if (isCustomRoleMode) {
+        toggleCustomRoleMode(false);
     }
     clearUploadedFile();
     updateCounters();
@@ -620,7 +658,17 @@ async function runAnalysis() {
         return;
     }
 
-    const targetRole = document.getElementById('target-role').value;
+    // Determine target role (either custom typed or from preset dropdown)
+    let targetRole = document.getElementById('target-role').value;
+    const customRoleInput = document.getElementById('custom-role-input');
+    if (isCustomRoleMode && customRoleInput && customRoleInput.value.trim()) {
+        targetRole = customRoleInput.value.trim();
+    } else if (targetRole === '__custom__' && customRoleInput && customRoleInput.value.trim()) {
+        targetRole = customRoleInput.value.trim();
+    } else if (targetRole === '__custom__') {
+        targetRole = 'Senior Full Stack Developer';
+    }
+
     const isCustomJd = document.getElementById('toggle-custom-jd').checked;
     const customJdText = isCustomJd ? document.getElementById('custom-jd-text').value.trim() : null;
 
@@ -676,7 +724,7 @@ async function runAnalysis() {
 
         renderResultsDashboard(data);
 
-        // Turn on "results ready" dot
+        // Turn on "results ready" dot in nav
         const dot = document.getElementById('results-ready-dot');
         if (dot) dot.classList.remove('hidden');
 
@@ -1038,17 +1086,6 @@ function renderCompetencyRadar(categorizedSkills) {
                 legend: { display: false }
             }
         }
-    });
-}
-
-/**
- * Copy Text to Clipboard (for Render guide commands)
- */
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert(currentLanguage === 'hi' ? 'कमांड कॉपी हो गई!' : 'Command copied to clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy', err);
     });
 }
 

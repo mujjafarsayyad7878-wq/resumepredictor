@@ -46,8 +46,31 @@ class CareerClassifier:
             secondary_skills = all_target_skills - required_skills
             min_exp = 3.0
             target_description = custom_jd_text
-            display_title = "Custom Job Description"
-            display_title_hi = "कस्टम जॉब विवरण (Custom JD)"
+            display_title = target_role_name.strip() if target_role_name else "Custom Job Description"
+            display_title_hi = display_title
+        elif target_role_name and target_role_name.strip():
+            # User typed their own custom role directly
+            clean_title = target_role_name.strip()
+            display_title = clean_title
+            display_title_hi = clean_title
+
+            # Match closest benchmark or default
+            title_lower = clean_title.lower()
+            closest = None
+            for key, val in JOB_ROLES.items():
+                if any(w in title_lower for w in key.lower().split() if len(w) > 3):
+                    closest = val
+                    break
+            if not closest:
+                closest = JOB_ROLES["Senior Full Stack Developer"]
+
+            # Extract any skills mentioned in the role title itself (e.g. "React Native Developer")
+            title_skills = set(extractor.extract_skills(clean_title)["all_skills"])
+            required_skills = title_skills | set(closest["primary_skills"][:6])
+            secondary_skills = set(closest["secondary_skills"][:4])
+            all_target_skills = required_skills | secondary_skills
+            min_exp = closest["min_experience_years"]
+            target_description = f"{clean_title}. Professional engineer role specializing in {', '.join(all_target_skills)}."
         else:
             role_def = JOB_ROLES["Senior Full Stack Developer"]
             required_skills = set(role_def["primary_skills"])
