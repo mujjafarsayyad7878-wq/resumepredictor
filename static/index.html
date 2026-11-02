@@ -84,6 +84,12 @@
 
             <!-- Language Switcher & Controls -->
             <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Direct Project Report (.docx) Download Button -->
+                <a href="/static/Smart_Resume_Predictor_Project_Report.docx" download="Smart_Resume_Predictor_Project_Report.docx" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all border border-indigo-400/30">
+                    <i class="fa-solid fa-file-word text-blue-200"></i>
+                    <span class="hidden md:inline">Download</span> Report (.docx)
+                </a>
+
                 <!-- Language Toggle Button (English / Hindi) -->
                 <button type="button" id="lang-toggle-btn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-xs font-semibold text-slate-200 flex items-center space-x-1.5 shadow-sm transition-all" title="Switch Language / भाषा बदलें">
                     <i class="fa-solid fa-language text-cyan-400 text-sm"></i>
@@ -147,6 +153,26 @@
                             <p class="text-[11px] text-slate-400" data-i18n="step3_desc">See match score, missing skills, salary and free courses.</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Academic Report Download Banner -->
+                <div class="mt-4 p-4 rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/60 border border-blue-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-300 text-xl shrink-0">
+                            <i class="fa-solid fa-file-word"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                DYPIU Academic Project Report (.docx)
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold">Mujjafar Sayyad</span>
+                            </h4>
+                            <p class="text-xs text-slate-300">Complete formal word report ready for direct download & university submission.</p>
+                        </div>
+                    </div>
+                    <a href="/static/Smart_Resume_Predictor_Project_Report.docx" download="Smart_Resume_Predictor_Project_Report.docx" class="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 flex items-center gap-2 transition-all cursor-pointer">
+                        <i class="fa-solid fa-download"></i>
+                        Download Word File (.docx)
+                    </a>
                 </div>
             </section>
 
